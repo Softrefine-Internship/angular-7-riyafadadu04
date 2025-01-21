@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 interface dynamicFormJson {
   type: string;
@@ -16,7 +17,9 @@ interface dynamicFormJson {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  registerForm!: FormGroup;
+
   formJson: dynamicFormJson[] = [
     {
       type: 'text',
@@ -57,15 +60,6 @@ export class AppComponent {
       options: ['Male', 'Female'],
     },
     {
-      type: 'checkbox',
-      label: 'agree',
-      isVisible: true,
-      isRequired: true,
-      errorMessage: 'You must agree to terms',
-      hint: '',
-      value: false,
-    },
-    {
       type: 'textarea',
       label: 'address',
       isVisible: true,
@@ -74,5 +68,43 @@ export class AppComponent {
       hint: 'Enter Your Address',
       value: '',
     },
+    {
+      type: 'checkbox',
+      label: 'agree',
+      isVisible: true,
+      isRequired: true,
+      errorMessage: 'You must agree to terms',
+      hint: 'I agree to the terms and conditions',
+      value: false,
+    },
   ];
+
+  constructor(private formBuilder: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.registerForm = this.formBuilder.group({});
+
+    this.formJson.forEach((field) => {
+      const validators = [];
+      if (field.isRequired) {
+        if (field.type === 'checkbox') {
+          validators.push(Validators.requiredTrue);
+        }
+        validators.push(Validators.required);
+      }
+
+      this.registerForm.addControl(
+        field.label,
+        this.formBuilder.control(field.value, validators)
+      );
+    });
+  }
+
+  onSubmit() {
+    if (this.registerForm.valid) {
+      console.log(this.registerForm.value);
+    } else {
+      this.registerForm.markAllAsTouched();
+    }
+  }
 }
